@@ -1,0 +1,14 @@
+{
+  "name": "cap1-tech-assessment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "loc-checker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "testCheckerWithoutDir": "node -e 'require(\"./loc-checker\").locChecker(\"/python-example.py\")'",
+    "testCheckerWithDir": "node -e 'require(\"./loc-checker\").locChecker(\"/js-example.ts\", \"/tests\")'",
+    "testCheckerWithDirJava": "node -e 'require(\"./loc-checker\").locChecker(\"/java-example.java\", \"/tests\")'"
+  },
+  "author": "Bai Zhuang Cen",
+  "license": "ISC"
+}
