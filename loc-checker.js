@@ -8,7 +8,10 @@ let totalLoc = 0, totalComments = 0, totalSingleLineComments = 0,
 
 //--------------- MAIN FUNCTION ---------------
 
-module.exports.locChecker = (filename, dir) => checkLinesOfCode(filename, dir)
+module.exports.locChecker = async (filename, dir) => {
+    let result = await checkLinesOfCode(filename, dir)
+    console.log(result)
+}
 
 //--------------- HELPER FUNCTIONS ---------------
 
@@ -115,58 +118,21 @@ const checkLinesOfCode = (filename, dir) => {
                 }
             }
         })
-
-        stream.on('end', () => {
-            console.log('\n------ Stream Ended ------\n')
-            console.log("\nTotal number of lines:", totalLoc)
-            console.log("totalComments:", totalComments)
-            console.log("totalSingleLineComments:", totalSingleLineComments)
-            console.log("totalBlockCommentLoc:", totalBlockCommentLoc)
-            console.log("totalBlockComments:", totalBlockComments)
-            console.log("totalTodos:", totalTodos)
-
-            //JAVA EXAMPLE
-            // Total # of lines: 60                                     
-            // Total # of comment lines: 28
-            // Total # of single line comments: 6                       
-            // Total # of comment lines within block comments: 22       
-            // Total # of block line comments: 2                        
-            // Total # of TODO’s: 1                                     
-
-            //JS EXAMPLE
-            // Total # of lines: 40
-            // Total # of comment lines: 23
-            // Total # of single line comments: 5
-            // Total # of comment lines within block comments: 18
-            // Total # of block line comments: 4
-            // Total # of TODO’s: 1
-
-            //PYTHON EXAMPLE
-            // Total # of lines: 61
-            // Total # of comment lines: 19
-            // Total # of single line comments: 9
-            // Total # of comment lines within block comments: 10
-            // Total # of block line comments: 3
-            // Total # of TODO’s: 3
+        return new Promise((resolve, reject) => {
+            stream.on('end', () => {
+                let result = {
+                    totalNumOfLines: totalLoc,
+                    totalNumOfComments: totalComments,
+                    totalNumOfSingleComments: totalSingleLineComments,
+                    totalNumLinesOfBlockComments: totalBlockCommentLoc,
+                    totalNumOfBlockComments: totalBlockComments,
+                    totalNumOfTodos: totalTodos
+                }
+                resolve(result)
+            })
         })
-
     } catch (err) {
         console.error('caught err while trying to read file:', err.message)
         return null
     } 
 }
-
-//*readStream saves chunks of the file data in memory at a time
-// var fs = require('fs');
-// var path = require('path');
-// var readStream = fs.createReadStream(path.join(__dirname, '../rooms') + '/rooms.txt', 'utf8');
-// let data = ''
-// readStream.on('data', function(chunk) {
-//     data += chunk;
-// }).on('end', function() {
-//     console.log(data);
-// });
-
-//*readFile saves whole file data in memory
-// let data = fs.readFileSync(__dirname + "/" + filename)
-// return data
