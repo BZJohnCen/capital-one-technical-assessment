@@ -16,7 +16,7 @@ You may notice the `python-example.py` test file is outside the `tests` director
 invoking the program without specifying a directory in the path.
 
 I have written this assessment in Node.js even though a better fittng language would be something more low-level (i.e Java).
-Ideally with a node-based solution, publishing this project/tool as a package/module onto npm would allow for quick and easy use and access.
+Ideally with a node-based solution, publishing this project/tool as a package/module onto npm as opposed to an application would allow for quick and easy use and access for the integration team.
 
 The `loc-checker.js` file holds the main implementation of the lines of code/comment checker. The `syntax-checker.js` file acts a config file to correctly check the syntax of the file being checked.
 
