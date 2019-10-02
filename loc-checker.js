@@ -55,70 +55,71 @@ const checkLinesOfCode = (filename, dir) => {
 
     try {
         let stream = readFile(filename, dir)
-        stream.on('data', dataChunk => {
-            locList = dataChunk.split("\n").map(line => line.trim())
-            //find total lines of code
-            totalLoc = locList.length
-            //find all metrics
-            let i = 0
-            for (i = 0; i < totalLoc; i++) {
-                let line = locList[i]
-                if (language.supportsBlock) {                   
-                    if (line.startsWith(language.comment)) { //SINGLE COMMENT
-                        if (line.includes("TODO:")) totalTodos++
-                        incrementCommentCounters()
-                    } else if (line.includes(language.comment)) { //SINGLE COMMENT WITHIN THE LINE                                           
-                        let isValidComment = isCommentWrappedInString(line, language)
-                        if (isValidComment) {
-                            if (line.indexOf("TODO:", line.indexOf(language.comment)) > 0) totalTodos++
-                            incrementCommentCounters() 
-                        }                                                          
-                    } else if (line.startsWith(language.blockCommentStart) || line.includes(language.blockCommentStart)) { //BLOCK COMMENTS
-                        if (line.includes(language.blockCommentEnd)) { //BLOCK COMMENT IN ONE LINE
-                            totalBlockComments++
-                            totalBlockCommentLoc++
-                            totalComments++
-                        } else {
-                            let endBlockIndex = locList.indexOf(language.blockCommentEnd, i) //find closing block comment
-                            if (endBlockIndex < 0) { //closing block comment is within a line
-                                let currentLineIndex = i
-                                while (endBlockIndex < 0) {
-                                    if (locList[currentLineIndex].includes("*/")) {
-                                        endBlockIndex = currentLineIndex
-                                    } else {
-                                        currentLineIndex++
-                                    }                    
-                                }
-                            }
-                            incrementBlockCommmentCounters(locList, i, endBlockIndex)
-                            i = endBlockIndex
-                        }
-                    }
-                } else { //language does not support block comments
-                    if (line.startsWith(language.comment) || line.includes(language.comment)) { //SINGLE COMMENT
-                        if (!locList[i+1].startsWith(language.comment)){
+        return new Promise((resolve, reject) => {
+            stream.on('data', dataChunk => {
+                locList = dataChunk.split("\n").map(line => line.trim())
+                //find total lines of code
+                totalLoc = locList.length
+                //traverse line by line
+                let i = 0
+                for (i = 0; i < totalLoc; i++) {
+                    let line = locList[i]
+                    if (language.supportsBlock) {                   
+                        if (line.startsWith(language.comment)) { //SINGLE COMMENT
+                            if (line.includes("TODO:")) totalTodos++
+                            incrementCommentCounters()
+                        } else if (line.includes(language.comment)) { //SINGLE COMMENT WITHIN THE LINE                                           
                             let isValidComment = isCommentWrappedInString(line, language)
-                            if (isValidComment || line.startsWith(language.comment)) {
+                            if (isValidComment) {
                                 if (line.indexOf("TODO:", line.indexOf(language.comment)) > 0) totalTodos++
-                                incrementCommentCounters()
-                            }                  
-                        } else { //BLOCK COMMENTS
-                            let endBlockIndex = -1, currentLineIndex = i
-                            while (endBlockIndex < 0) {
-                                if (locList[currentLineIndex+1].startsWith(language.comment)){
-                                    currentLineIndex++
-                                } else {
-                                    endBlockIndex = currentLineIndex
+                                incrementCommentCounters() 
+                            }                                                          
+                        } else if (line.startsWith(language.blockCommentStart) || line.includes(language.blockCommentStart)) { //BLOCK COMMENTS
+                            if (line.includes(language.blockCommentEnd)) { //BLOCK COMMENT IN ONE LINE
+                                totalBlockComments++
+                                totalBlockCommentLoc++
+                                totalComments++
+                            } else {
+                                let endBlockIndex = locList.indexOf(language.blockCommentEnd, i) //find closing block comment
+                                if (endBlockIndex < 0) { //closing block comment is within a line
+                                    let currentLineIndex = i
+                                    while (endBlockIndex < 0) {
+                                        if (locList[currentLineIndex].includes("*/")) {
+                                            endBlockIndex = currentLineIndex
+                                        } else {
+                                            currentLineIndex++
+                                        }                    
+                                    }
                                 }
+                                incrementBlockCommmentCounters(locList, i, endBlockIndex)
+                                i = endBlockIndex
                             }
-                            incrementBlockCommmentCounters(locList, i, endBlockIndex)
-                            i = endBlockIndex
+                        }
+                    } else { //language does not support block comments
+                        if (line.startsWith(language.comment) || line.includes(language.comment)) { //SINGLE COMMENT
+                            if (!locList[i+1].startsWith(language.comment)){
+                                let isValidComment = isCommentWrappedInString(line, language)
+                                if (isValidComment || line.startsWith(language.comment)) {
+                                    if (line.indexOf("TODO:", line.indexOf(language.comment)) > 0) totalTodos++
+                                    incrementCommentCounters()
+                                }                  
+                            } else { //BLOCK COMMENTS
+                                let endBlockIndex = -1, currentLineIndex = i
+                                while (endBlockIndex < 0) {
+                                    if (locList[currentLineIndex+1].startsWith(language.comment)){
+                                        currentLineIndex++
+                                    } else {
+                                        endBlockIndex = currentLineIndex
+                                    }
+                                }
+                                incrementBlockCommmentCounters(locList, i, endBlockIndex)
+                                i = endBlockIndex
+                            }
                         }
                     }
                 }
-            }
-        })
-        return new Promise((resolve, reject) => {
+            })
+            
             stream.on('end', () => {
                 let result = {
                     totalNumOfLines: totalLoc,
